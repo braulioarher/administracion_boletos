@@ -5,6 +5,6 @@ class EventModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
-    start_date = db.Column(db.datetime, nullable=False)
-    end_date = db.Column(db.datetime, nullable=False)
+    start_date = db.Column(db.DateTime, nullable=False)
+    end_date = db.Column(db.DateTime, nullable=False)
     tickets = db.relationship("EventModel", back_populates="event", lazy="dynamic", cascade="all, delete-orphan")
