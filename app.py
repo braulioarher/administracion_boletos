@@ -22,7 +22,13 @@ def create_app(db_url=None):
     app.config["OPENAPI_URL_PREFIX"] = "/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["JSON_SORT_KEYS"] = False
     db.init_app(app)
+
+    @app.before_first_request
+    def create_tables():
+        db.create_all()
+
     migrate = Migrate(app, db)
 
     # Creacion de api
