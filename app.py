@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from db import db
 import models
 
-#from resources.event import blp as EventBlueprint
+from resources.event import blp as EventBlueprint
 #from resources.ticket import blp as TicketBlueprint
 
 def create_app(db_url=None):
@@ -28,7 +28,7 @@ def create_app(db_url=None):
     # Creacion de api
     api = Api(app)
 
-    #api.register_blueprint(EventBlueprint)
+    api.register_blueprint(EventBlueprint)
     #api.register_blueprint(TicketBlueprint)
 
     return app
