@@ -13,13 +13,30 @@ blp = Blueprint("events", __name__, description="Operations on events")
 class Event(MethodView):
 
     blp.response(200, EventSchema)
+    def get(self, event_id):
+        event_data = EventModel.query.get_or_404(event_id)
+        total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).count()
+        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True).count()
+        redeemed_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_redeemed==True).count()
+
+        event = {
+            "name": event_data.name,
+            "start_date": event_data.start_date,
+            "end_date": event_data.end_date,
+            "boletos_totales": total_tickets,
+            "boletos_venditos": sold_tickets,
+            "boletos_canjeados": redeemed_tickets
+        }
+        return event
+
     def delete(self, event_id):
         event = EventModel.query.get_or_404(event_id)
         db.session.delete(event)
         db.session.commit()
+        #sold_tickets = db.session.query(EventModel.id).join()
         return {"message": "Evento borrado"}
 
-@blp.route("/event")
+@blp.route("/events")
 class EventList(MethodView):
     @blp.response(200, EventSchema(many=True))
     def get(self):
