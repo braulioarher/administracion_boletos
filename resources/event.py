@@ -31,9 +31,11 @@ class Event(MethodView):
 
     def delete(self, event_id):
         event = EventModel.query.get_or_404(event_id)
+        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True).count()
+        if event.end_date < datetime.now() and sold_tickets > 0:
+            abort(500, message="Error, no puedes borrar evento ya que tiene boletos vendidos")
         db.session.delete(event)
         db.session.commit()
-        #sold_tickets = db.session.query(EventModel.id).join()
         return {"message": "Evento borrado"}
 
 @blp.route("/events")
