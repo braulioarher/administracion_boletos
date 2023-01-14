@@ -8,7 +8,7 @@ from db import db
 import models
 
 from resources.event import blp as EventBlueprint
-#from resources.ticket import blp as TicketBlueprint
+from resources.ticket import blp as TicketBlueprint
 
 def create_app(db_url=None):
 
@@ -35,6 +35,6 @@ def create_app(db_url=None):
     api = Api(app)
 
     api.register_blueprint(EventBlueprint)
-    #api.register_blueprint(TicketBlueprint)
+    api.register_blueprint(TicketBlueprint)
 
     return app

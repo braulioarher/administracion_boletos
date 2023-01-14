@@ -12,6 +12,9 @@ class PlainEventSchema(Schema):
     tickets_num = fields.Int(required=True)
 
 class PlainTicketSchema(Schema):
+    class Meta:
+        ordered = True 
+
     id = fields.Int(dump_only=True)
     is_sold = fields.Bool(required=True)
     is_redeemed = fields.Bool(required=True)
@@ -29,3 +32,9 @@ class EventUpdateSchema(Schema):
     start_date = fields.DateTime(required=True)
     end_date = fields.DateTime(required=True)
     tickets_num = fields.Int(required=False)
+
+# class TicketSellSchema(Schema):
+#     is_sold = fields.Bool(required=True)
+
+# class TicketRedeemSchema(Schema):
+#     is_sold = fields.Bool(required=True)

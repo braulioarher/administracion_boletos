@@ -16,8 +16,10 @@ class Event(MethodView):
     @blp.response(200, EventDetailSchema)
     def get(self, event_id):
         event_data = EventModel.query.get_or_404(event_id)
+        # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id
         total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_data.id).count()
-        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True).count()
+        # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
+        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and event_id == event_data.id).count()
         redeemed_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_redeemed==True).count()
 
         event = {
@@ -35,7 +37,8 @@ class Event(MethodView):
     def delete(self, event_id):
         # Verifica el evento exista en la db
         event = EventModel.query.get_or_404(event_id)
-        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True).count()
+        # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
+        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and event_id == event.id).count()
         # Validacion para no borrar un evento con boletos vendidos y que no haya ocurrido
         if event.end_date < datetime.now() and sold_tickets > 0:
             abort(500, message="Error, no puedes borrar evento ya que tiene boletos vendidos")
@@ -54,18 +57,25 @@ class Event(MethodView):
                 abort(500, message="La fecha de inicio del evento no puede ser menor a la ya gurdada")
             if event_data["start_date"] > event_data["end_date"]:
                 abort(500, message="La fecha de inicio del evento no puede ser mayor a la del final")
+            # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id
             total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event.id).count()
+            # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
             sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and TicketModel.id==event.id).count()
             # Revisa que el payload de event_data contenga tickets_num
             if "tickets_num" in event_data:
                 # Validaciones para Agregar/Eliminar Tickets
-                if sold_tickets >= event_data["tickets_num"]:
+                if sold_tickets > event_data["tickets_num"]:
                     abort(500, message="No puedes disminur la cantidad de boletos ya que es menor a los ya vendidos")
                 # Agrega/Elimina boletos
                 if total_tickets < event_data["tickets_num"]:
                     event.name = event_data["name"]
                     event.start_date = event_data["start_date"]
                     event.end_date = event_data["end_date"]
+                    try:
+                        db.session.add(event)
+                        db.session.commit()
+                    except SQLAlchemyError:
+                        abort(500, message="Un error ocurrio al insertar el Ticket")
 
                     for i in range(total_tickets, event_data["tickets_num"]):
                         ticket = TicketModel(id=str(event_id) + str(i), is_sold=False, is_redeemed=False, event_id=event_id)
@@ -74,26 +84,33 @@ class Event(MethodView):
                             db.session.commit()
                         except SQLAlchemyError:
                             abort(500, message="Un error ocurrio al insertar el Ticket")
-                    db.session.add(event)
-                    db.session.commit()
+
                     return event
                 else:
                     event.name = event_data["name"]
                     event.start_date = event_data["start_date"]
                     event.end_date = event_data["end_date"]
+                    try:
+                        db.session.add(event)
+                        db.session.commit()
+                    except SQLAlchemyError:
+                        abort(500, message="Un error ocurrio al insertar el Ticket")
+
                     for i in range(total_tickets-1, event_data["tickets_num"]-1, -1):
                         ticket = TicketModel.query.get_or_404(str(event_id) + str(i))
                         db.session.delete(ticket)
                         db.session.commit()
-                    db.session.add(event)
-                    db.session.commit()
+
                     return event
             else:
                 event.name = event_data["name"]
                 event.start_date = event_data["start_date"]
                 event.end_date = event_data["end_date"]
-                db.session.add(event)
-                db.session.commit()
+                try:
+                    db.session.add(event)
+                    db.session.commit()
+                except SQLAlchemyError:
+                            abort(500, message="Un error ocurrio al insertar el Ticket")
                 return event
         else:
             abort(500, message="El evento que quieres actualizar no existe")
