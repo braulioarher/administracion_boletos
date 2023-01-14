@@ -16,7 +16,7 @@ class Event(MethodView):
     @blp.response(200, EventDetailSchema)
     def get(self, event_id):
         event_data = EventModel.query.get_or_404(event_id)
-        total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).count()
+        total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_data.id).count()
         sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True).count()
         redeemed_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_redeemed==True).count()
 
@@ -54,8 +54,8 @@ class Event(MethodView):
                 abort(500, message="La fecha de inicio del evento no puede ser menor a la ya gurdada")
             if event_data["start_date"] > event_data["end_date"]:
                 abort(500, message="La fecha de inicio del evento no puede ser mayor a la del final")
-            total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).count()
-            sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True).count()
+            total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event.id).count()
+            sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and TicketModel.id==event.id).count()
             # Revisa que el payload de event_data contenga tickets_num
             if "tickets_num" in event_data:
                 # Validaciones para Agregar/Eliminar Tickets
