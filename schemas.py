@@ -16,6 +16,7 @@ class PlainTicketSchema(Schema):
         ordered = True 
 
     id = fields.Int(dump_only=True)
+    event_id = fields.Int()
     is_sold = fields.Bool(required=True)
     is_redeemed = fields.Bool(required=True)
 

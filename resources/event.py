@@ -40,7 +40,8 @@ class Event(MethodView):
         # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
         sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and event_id == event.id).count()
         # Validacion para no borrar un evento con boletos vendidos y que no haya ocurrido
-        if event.end_date < datetime.now() and sold_tickets > 0:
+        #Si el evento no ha pasado y se tienen boletos vendidos no se borra
+        if event.end_date > datetime.now() and sold_tickets > 0:
             abort(500, message="Error, no puedes borrar evento ya que tiene boletos vendidos")
         db.session.delete(event)
         db.session.commit()
