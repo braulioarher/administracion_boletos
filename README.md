@@ -1,5 +1,7 @@
 # Prueba de sistema de administracion de boletos para eventos
 
+Las pruebas se realizaron primero con un programa llamado Insomnia el cual sirvio para probrar las rutas manualmente, para poder realizar pruebas manuales se puede usar los recurso a continuacion descrito para hacer la pruebas manuales por ejemplo en POSTMAN o en la misma INSOMNIA REST
+
 ## Recursos de events
 
 Dentro de los recurso de event tenemos dos rutas:
