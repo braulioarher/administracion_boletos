@@ -21,8 +21,8 @@ class Event(MethodView):
         # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id
         total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_data.id).count()
         # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
-        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and event_id == event_data.id).count()
-        redeemed_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_redeemed==True).count()
+        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_id).filter(TicketModel.is_sold == True).count()
+        redeemed_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_id).filter(TicketModel.is_redeemed == True).count()
 
         event = {
             "id": event_data.id,
@@ -40,14 +40,14 @@ class Event(MethodView):
         # Verifica el evento exista en la db
         event = EventModel.query.get_or_404(event_id)
         # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
-        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and event_id == event.id).count()
+        sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_id).filter(TicketModel.is_sold == True).count()
         # Validacion para no borrar un evento con boletos vendidos y que no haya ocurrido
         #Si el evento no ha pasado y se tienen boletos vendidos no se borra
         if event.end_date > datetime.now() and sold_tickets > 0:
-            abort(403, message="Error, no puedes borrar evento ya que tiene boletos vendidos")
+            abort(403, message=f"Error, no puedes borrar evento ya que tiene boletos vendidos")
         db.session.delete(event)
         db.session.commit()
-        return {"message": "Evento borrado"}, 204
+        return {"message": "Evento borrado"}
 
     @blp.arguments(EventUpdateSchema)
     @blp.response(200, EventUpdateSchema)
@@ -63,7 +63,7 @@ class Event(MethodView):
             # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id
             total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event.id).count()
             # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
-            sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and TicketModel.id==event.id).count()
+            sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event_id).filter(TicketModel.is_sold == True).count()
             # Revisa que el payload de event_data contenga tickets_num
             if "tickets_num" in event_data:
                 # Valida que cumpla el rango de boletos establecido

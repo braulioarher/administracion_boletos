@@ -207,8 +207,8 @@ def test_delete_evento(client):
     headers1 = {'Content-Type': "application/json"}
     response1 = client.delete(url1, headers=headers1)
     ans1 = response1.get_data(as_text=True).strip()
-    assert ans1 == 204
-    #assert ans_dict1 == 'Error, no puedes borrar evento ya que tiene boletos vendidos'
+    assert ans1 == '{"message":"Evento borrado"}'
+    assert response.status_code == 201
 
 def test_delete_evento_con_boletos_vendido(client):
     url = "/event/1"
