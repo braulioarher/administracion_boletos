@@ -66,3 +66,27 @@ Dentro de los recurso de tickets tenemos dos rutas:
                     De tipo POST:
                     (Require un argumento que es el ticket_id)
                         - Al usar este recurso la API evalua los rangos de inicio y final del evento y que el boleto no haya sido canjeado en caso de que todo este en orden se actualiza en la base de datos y regresa los detalles del boleto
+
+## Ejectutar pruebas
+
+Para ejecutar la pruebas creadas es necesario ubicarnos en la carpeta de nuestro projecto y seguir los siguientes pasos
+
+        1.- correr el comando:  pip install -r requiremets.txt
+        2.- activar el entorno virtual usando: source venv/bin/activate
+        3.- ejecutar el scrip test.sh usando: sh test.sh
+
+## Correr aplicacion en docker
+
+Para correr el proyecto en un contenedor de docker es necesario tener docker desktop instaldo
+
+Ahora nos posicionamos en la carpera donde tenemos nuestro proyecto y seguimos los siguientes pasos:
+
+1.- Crear nuestra imagen Docker con el comando:
+
+        - docker build -t arkon-test .
+
+2.- Crear y correr nuestro contenedor con el comando:
+
+        - docker run -d -p 5005:5000 -w /app -v "$(pwd):/app" arkon-test
+
+Listo ya tenemos nuestro servicio funcionando
