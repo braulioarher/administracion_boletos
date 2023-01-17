@@ -6,12 +6,11 @@ from flask_migrate import Migrate
 
 from db import db
 import models
-
 from resources.event import blp as EventBlueprint
 from resources.ticket import blp as TicketBlueprint
 
-def create_app(db_url=None):
 
+def create_app(db_url=None):
     app = Flask(__name__)
 
     # Variables de entorno de nuestra app

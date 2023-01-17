@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
@@ -17,13 +18,13 @@ class VenderTicket(MethodView):
     def put(self, ticket_id):
         ticket = TicketModel.query.get_or_404(ticket_id)
         if ticket.is_sold == True:
-            abort(500, message="Este boleto ya ha sido vendido")
+            abort(403, message="Este boleto ya ha sido vendido")
 
         ticket.is_sold = True
         db.session.add(ticket)
         db.session.commit()
 
-        return ticket
+        return ticket, 201
 
 # Ruta de recurso para canjear boleto
 @blp.route("/ticket/redeem/<string:ticket_id>")
@@ -41,8 +42,8 @@ class CanjearTicket(MethodView):
             db.session.add(ticket)
             db.session.commit()
 
-            return ticket
+            return ticket, 201
         else: 
-            abort(500, message=f"Solo puedes cajear el boleto entre {event.start_date} y {event.end_date}")
+            abort(403, message=f"Solo puedes cajear el boleto entre {event.start_date} y {event.end_date}")
 
         

@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields
 
+
 # Esquemas para validar la informacion proveniente del cliente
 class PlainEventSchema(Schema):
     class Meta:
@@ -33,9 +34,3 @@ class EventUpdateSchema(Schema):
     start_date = fields.DateTime(required=True)
     end_date = fields.DateTime(required=True)
     tickets_num = fields.Int(required=False)
-
-# class TicketSellSchema(Schema):
-#     is_sold = fields.Bool(required=True)
-
-# class TicketRedeemSchema(Schema):
-#     is_sold = fields.Bool(required=True)

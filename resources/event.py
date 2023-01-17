@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import SQLAlchemyError
@@ -6,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import db
 from models import EventModel, TicketModel
 from schemas import EventSchema, EventUpdateSchema, EventDetailSchema
+
 
 blp = Blueprint("events", __name__, description="Operations on events")
 
@@ -42,10 +44,10 @@ class Event(MethodView):
         # Validacion para no borrar un evento con boletos vendidos y que no haya ocurrido
         #Si el evento no ha pasado y se tienen boletos vendidos no se borra
         if event.end_date > datetime.now() and sold_tickets > 0:
-            abort(500, message="Error, no puedes borrar evento ya que tiene boletos vendidos")
+            abort(403, message="Error, no puedes borrar evento ya que tiene boletos vendidos")
         db.session.delete(event)
         db.session.commit()
-        return {"message": "Evento borrado"}
+        return {"message": "Evento borrado"}, 204
 
     @blp.arguments(EventUpdateSchema)
     @blp.response(200, EventUpdateSchema)
@@ -54,19 +56,22 @@ class Event(MethodView):
         # Valida que el evento exista
         if event:
             # Valida fechas y numero de boletos antes de agregar/disminuir
-            if event_data["start_date"] < event.start_date:
-                abort(500, message="La fecha de inicio del evento no puede ser menor a la ya gurdada")
+            if event_data["start_date"] < datetime.now():
+                abort(403, message="La fecha del evento no puede ser menor a la de actual")
             if event_data["start_date"] > event_data["end_date"]:
-                abort(500, message="La fecha de inicio del evento no puede ser mayor a la del final")
+                abort(403, message="La fecha de inicio del evento no puede ser mayor a la del final")
             # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id
             total_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.event_id == event.id).count()
             # SELECT FROM events JOIN tickets ON events.id = tickets.id WHERE event.id = envet_id AND ticket.is_sold = True
             sold_tickets = db.session.query(EventModel.id).join(TicketModel, TicketModel.event_id == EventModel.id).filter(TicketModel.is_sold==True and TicketModel.id==event.id).count()
             # Revisa que el payload de event_data contenga tickets_num
             if "tickets_num" in event_data:
+                # Valida que cumpla el rango de boletos establecido
+                if event_data["tickets_num"] > 300 or event_data["tickets_num"] < 1:
+                    abort(403, message="El rango de boletos a crear debe ser entre 1 y 300")
                 # Validaciones para Agregar/Eliminar Tickets
                 if sold_tickets > event_data["tickets_num"]:
-                    abort(500, message="No puedes disminur la cantidad de boletos ya que es menor a los ya vendidos")
+                    abort(403, message="No puedes disminur la cantidad de boletos ya que es menor a los ya vendidos")
                 # Agrega/Elimina boletos
                 if total_tickets < event_data["tickets_num"]:
                     event.name = event_data["name"]
@@ -133,11 +138,11 @@ class EventList(MethodView):
         tickets = event_data["tickets_num"]
         # Validaciones de fechas y numeros de boletos para crear evento
         if event_data["start_date"] < datetime.now():
-            abort(500, message="La fecha del evento no puede ser menor a la de hoy")
+            abort(403, message="La fecha del evento no puede ser menor a la de hoy")
         if event_data["start_date"] > event_data["end_date"]:
-            abort(500, message="La fecha de inicio del evento no puede ser mayor a la del final")
-        if 1 < event_data["tickets_num"] > 300:
-            abort(500, message="El rango de boletos a crear debe ser entre 1 y 300")
+            abort(403, message="La fecha de inicio del evento no puede ser mayor a la del final")
+        if event_data["tickets_num"] > 300 or event_data["tickets_num"] < 1:
+            abort(403, message="El rango de boletos a crear debe ser entre 1 y 300")
         # Agregando evento a la db
         try:
             db.session.add(event)
