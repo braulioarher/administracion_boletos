@@ -1,6 +1,6 @@
 # Prueba de sistema de administracion de boletos para eventos
 
-Las pruebas se realizaron primero con un programa llamado Insomnia el cual sirvio para probrar las rutas manualmente, para poder realizar pruebas manuales se puede usar los recurso a continuacion descrito para hacer la pruebas manuales por ejemplo en POSTMAN o en la misma INSOMNIA REST
+Las pruebas a la API se realizaron primero con un programa llamado Insomnia el cual sirvio para probrar las rutas manualmente, para poder realizar pruebas manuales se puede usar los recurso a continuacion descrito para hacer la pruebas manuales por ejemplo en POSTMAN o en la misma INSOMNIA REST
 
 ## Recursos de events
 
@@ -73,8 +73,8 @@ Dentro de los recurso de tickets tenemos dos rutas:
 
 Para ejecutar la pruebas creadas es necesario ubicarnos en la carpeta de nuestro projecto y seguir los siguientes pasos
 
-        1.- correr el comando:  pip install -r requiremets.txt
-        2.- activar el entorno virtual usando: source venv/bin/activate
+        1.- activar el entorno virtual usando: source venv/bin/activate
+        2.- correr el comando:  pip install -r requirements.txt
         3.- ejecutar el scrip test.sh usando: sh test.sh
 
 ## Correr aplicacion en docker
