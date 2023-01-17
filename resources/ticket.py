@@ -35,15 +35,17 @@ class CanjearTicket(MethodView):
         ticket = TicketModel.query.get_or_404(ticket_id)
         event = EventModel.query.get_or_404(ticket.event_id)
         if event.start_date <= datetime.now() <= event.end_date:
+            if ticket.is_sold == False:
+                abort(403, message="No se puede canjear boleto ya que no ha sido vendido")
             if ticket.is_redeemed == True:
-                abort(500, message="Este boleto ya ha sido cajeado")
+                abort(403, message="Error este boleto ya ha sido cajeado")
 
-            ticket.is_sold = True
+            ticket.is_redeemed = True
             db.session.add(ticket)
             db.session.commit()
 
             return ticket, 201
         else: 
-            abort(403, message=f"Solo puedes cajear el boleto entre {event.start_date} y {event.end_date}")
+            abort(403, message=f"Solo puedes cajear el boleto durante el evento")
 
         

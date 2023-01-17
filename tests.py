@@ -1,3 +1,4 @@
+import time
 import json
 
 from flask import Flask
@@ -40,7 +41,7 @@ def test_eventos_vacio(client):
 def test_agregar_evento(client):
     url = "/events"
     headers = {'Content-Type': "application/json"}
-    start_date = format(datetime.now() + timedelta(hours=1), '%Y-%m-%d %H:%M:%S')
+    start_date = format(datetime.now() + timedelta(seconds=3), '%Y-%m-%d %H:%M:%S')
     end_date = format(datetime.now() + timedelta(hours=2), '%Y-%m-%d %H:%M:%S')
     payload = f'{{"name": "Queen", "start_date": "{start_date}", "end_date": "{end_date}", "tickets_num": 5}}'
     response = client.post(url, headers=headers, data=payload)
@@ -118,10 +119,10 @@ def test_detalles_del_evento(client):
     assert ans_dict['name'] == 'Queen'
     assert response.status_code == 200
 
-def test_update_event(client):
+def test_update_evento(client):
     url = "/event/1"
     headers = {'Content-Type': "application/json"}
-    start_date = format(datetime.now() + timedelta(hours=1), '%Y-%m-%d %H:%M:%S')
+    start_date = format(datetime.now() + timedelta(seconds=3), '%Y-%m-%d %H:%M:%S')
     end_date = format(datetime.now() + timedelta(hours=2), '%Y-%m-%d %H:%M:%S')
     payload = f'{{"name": "Cream", "start_date": "{start_date}", "end_date": "{end_date}", "tickets_num": 10}}'
     response = client.put(url, headers=headers, data=payload)
@@ -137,7 +138,7 @@ def test_update_event(client):
     ans_dict1 = json.loads(ans1)
     assert ans_dict1["boletos_totales"] == 10
 
-def test_update_event_con_fechas_incoherentes(client):
+def test_update_evento_con_fechas_incoherentes(client):
     url = "/event/1"
     headers = {'Content-Type': "application/json"}
     start_date = format(datetime.now() - timedelta(hours=1), '%Y-%m-%d %H:%M:%S')
@@ -228,3 +229,34 @@ def test_canjear_boleto(client):
     ans = response.get_data(as_text=True).strip()
     ans_dict = json.loads(ans)
     assert ans_dict["code"] == 403
+    assert ans_dict["message"] == 'Solo puedes cajear el boleto durante el evento'
+
+    url = "/event/1"
+    headers = {'Content-Type': "application/json"}
+    start_date = format(datetime.now() + timedelta(seconds=3), '%Y-%m-%d %H:%M:%S')
+    end_date = format(datetime.now() + timedelta(hours=2), '%Y-%m-%d %H:%M:%S')
+    payload = f'{{"name": "Cream", "start_date": "{start_date}", "end_date": "{end_date}", "tickets_num": 10}}'
+    response = client.put(url, headers=headers, data=payload)
+    ans = response.get_data(as_text=True).strip()
+    ans_dict = json.loads(ans)
+    assert ans_dict['name'] == 'Cream'
+    assert response.status_code == 200
+
+    time.sleep(5)
+
+    url = "/ticket/redeem/10"
+    headers = {'Content-Type': "application/json"}
+    response = client.put(url, headers=headers)
+    ans = response.get_data(as_text=True).strip()
+    ans_dict = json.loads(ans)
+    assert response.status_code == 201
+    assert ans_dict["id"] == 10
+    assert ans_dict["is_redeemed"] == True
+
+    url = "/ticket/redeem/10"
+    headers = {'Content-Type': "application/json"}
+    response = client.put(url, headers=headers)
+    ans = response.get_data(as_text=True).strip()
+    ans_dict = json.loads(ans)
+    assert response.status_code == 403
+    assert ans_dict["message"] == "Error este boleto ya ha sido cajeado"
